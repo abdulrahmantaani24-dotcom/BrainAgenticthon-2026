@@ -1,0 +1,109 @@
+# =============================================================================
+# BrainAgenticthon-2026 — Storage Configuration (Example)
+# =============================================================================
+#
+# Copy this file to configs/storage.yaml and adjust paths for your environment.
+# NEVER commit the real storage.yaml — it may contain local paths.
+#
+# This config is loaded by:
+#   from brainagenticthon.preprocessing.dataset_registry import StorageConfig
+#   cfg = StorageConfig.from_yaml("configs/storage.yaml")
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Google Colab environment
+# ---------------------------------------------------------------------------
+colab:
+  # Temporary workspace inside Colab runtime (ephemeral — lost on restart)
+  workspace: "/content/brainagenticthon"
+
+  # Google Drive mount point (persistent across sessions)
+  drive_mount: "/content/drive"
+
+  # Persistent storage root inside Google Drive
+  drive_project_root: "/content/drive/MyDrive/BrainAgenticthon-2026"
+
+# ---------------------------------------------------------------------------
+# Local / on-prem environment  (ignored when running inside Colab)
+# ---------------------------------------------------------------------------
+local:
+  workspace: "./workspace"
+
+# ---------------------------------------------------------------------------
+# Persistent storage — resolved relative to the environment root
+# ---------------------------------------------------------------------------
+persistent:
+  # Base path — set to the Colab drive_project_root or a local directory
+  base_path: "/content/drive/MyDrive/BrainAgenticthon-2026"
+
+  # Sub-directories under base_path
+  checkpoints_dir: "checkpoints"
+  metrics_dir: "metrics"
+  outputs_dir: "outputs"
+  logs_dir: "logs"
+  configs_snapshot_dir: "configs_snapshots"
+
+# ---------------------------------------------------------------------------
+# Dataset sources — registry identifiers and per-source settings
+# ---------------------------------------------------------------------------
+datasets:
+  # BraTS (official via Synapse)
+  brats:
+    source: "brats_synapse"
+    # Replace with the actual Synapse project ID after obtaining access
+    synapse_project_id: "syn00000000"
+    # Path to your .synapseConfig file (NEVER commit this file)
+    credentials_path: "~/.synapseConfig"
+    # Expected modalities per case
+    modalities:
+      - t1
+      - t1ce
+      - t2
+      - flair
+      - seg
+    # Where raw data lands (under colab.workspace or local.workspace)
+    raw_subdir: "data/raw/brats"
+
+  # Local / manually-transferred dataset
+  local_example:
+    source: "local_directory"
+    root_dir: "data/raw/local_dataset"
+    modalities:
+      - t1
+      - t1ce
+      - t2
+      - flair
+      - seg
+
+# ---------------------------------------------------------------------------
+# Validation settings
+# ---------------------------------------------------------------------------
+validation:
+  # Expected NIfTI properties
+  expected_orientation: "RAS"
+  voxel_spacing_tolerance: 0.01
+  min_dimension: 10
+  max_dimension: 512
+  # BraTS label values (background=0, NCR=1, ED=2, ET=3)
+  expected_labels:
+    - 0
+    - 1
+    - 2
+    - 3
+  # Hash algorithm for integrity checks
+  hash_algorithm: "sha256"
+  # Number of parallel workers for dataset validation
+  validation_workers: 4
+
+# ---------------------------------------------------------------------------
+# Security reminders
+# ---------------------------------------------------------------------------
+# ⚠  NEVER commit:
+#   - Real .synapseConfig files or API tokens
+#   - Patient-level medical data
+#   - Model weight files (*.pt, *.pth, *.ckpt, *.safetensors)
+#   - This file if it contains real credentials or patient paths
+#
+# The .gitignore already excludes these patterns.  Use this example file
+# as a template and keep your real config local.
+# ---------------------------------------------------------------------------

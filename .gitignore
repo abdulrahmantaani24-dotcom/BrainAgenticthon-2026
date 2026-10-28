@@ -130,6 +130,9 @@ env.bak/
 venv.bak/
 secrets.*
 !secrets.example.*
+.synapseConfig
+configs/storage.yaml
+configs/storage.local.yaml
 
 # ── IDE / Editor ─────────────────────────────────────────────────────────────
 .spyderproject
