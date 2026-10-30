@@ -108,6 +108,12 @@ pip install -e ".[dev]"
 pytest tests/test_smoke.py -v
 ```
 
+### Task A dataset readiness
+
+See [Task A dataset readiness](docs/task_a_dataset_readiness.md) for the read-only
+manifest/image audit, verified control rules, source/site confounding checks,
+and authorized Colab access. The workflow does not download data or train a model.
+
 ---
 
 ## Data Policy
