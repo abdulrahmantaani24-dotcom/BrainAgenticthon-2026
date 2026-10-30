@@ -245,7 +245,7 @@ def test_analyze_pair_valid_native_geometry_still_requires_review(helpers, tmp_p
 @pytest.mark.parametrize("changes,flag", [
     ({"nonfinite": True}, "nonfinite_voxels"),
     ({"constant": True}, "constant_volume"),
-    ({"shape": (12, 13, 14, 1)}, "image_not_exactly_3d"),
+    ({"shape": (12, 13, 14, 2)}, "non_singleton_4d_not_supported"),
     ({"shape": (5, 13, 14)}, "invalid_spatial_dimensions"),
     ({"spacing": (20, 1, 1)}, "header.voxel_size"),
 ])
@@ -302,13 +302,155 @@ def test_analyze_payload_symlink_escape_is_not_read(helpers, tmp_path):
         helpers["validate_analyze_pair"](header, root)
 
 
-def test_nifti_pair_is_not_silently_treated_as_analyze(helpers, tmp_path):
-    path = tmp_path / "synthetic-nifti-pair.hdr"
-    data = np.arange(12 * 13 * 14, dtype=np.float32).reshape(12, 13, 14)
-    nib.save(nib.Nifti1Pair(data, np.eye(4)), path)
+@pytest.mark.parametrize("image_class", [nib.AnalyzeImage, nib.Nifti1Pair, nib.Nifti2Pair])
+@pytest.mark.parametrize("shape", [(12, 13, 14), (12, 13, 14, 1)])
+@pytest.mark.parametrize("entry_suffix", [".hdr", ".img"])
+def test_paired_formats_and_singleton_views_use_existing_validator_without_mutation(
+    helpers, tmp_path, monkeypatch, image_class, shape, entry_suffix,
+):
+    path = tmp_path / "synthetic-mpr-1.nifti.hdr"
+    data = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    nib.save(image_class(data, np.eye(4)), path)
+    original_image = nib.load(path)
+    original_affine = original_image.affine.copy()
+    before = fingerprint_tree(tmp_path)
+    called = []
+    for method in ("validate_header", "validate_dimensions", "validate_voxel_spacing",
+                   "validate_orientation"):
+        original = getattr(helpers["NIfTIValidator"], method)
+
+        def spy(self, filename, *args, _method=method, _original=original, **kwargs):
+            called.append(_method)
+            assert Path(filename) == path
+            return _original(self, filename, *args, **kwargs)
+
+        monkeypatch.setattr(helpers["NIfTIValidator"], method, spy)
+    result = helpers["validate_analyze_pair"](path.with_suffix(entry_suffix), tmp_path)
+    assert result["computational_checks_passed"], result["failures"]
+    assert result["shape"] == list(shape)
+    assert result["spatial_shape"] == list(shape[:3])
+    assert result["in_memory_volume_shape"] == list(shape[:3])
+    assert result["singleton_axis_view"] == (len(shape) == 4)
+    assert result["in_memory_view_operation"] == ("data[..., 0]" if len(shape) == 4 else "none")
+    assert result["source_pair_format"] == type(original_image).__name__
+    assert called == ["validate_header", "validate_dimensions", "validate_voxel_spacing",
+                      "validate_orientation"]
+    assert result["existing_validator_checks"] == ["header", "dimensions", "voxel_spacing",
+                                                   "orientation"]
+    assert result["quality_status"] == "review_required"
+    assert {"analyze_world_geometry_and_units_unverified", "native_t1_not_verified",
+            "visual_qc_not_performed"} <= set(result["quality_flags"])
+    assert result["original_pair_unchanged"] and fingerprint_tree(tmp_path) == before
+    assert np.array_equal(nib.load(path).affine, original_affine)
+    assert np.array_equal(np.asarray(nib.load(path).dataobj), data)
+
+
+@pytest.mark.parametrize("shape", [(12, 13, 14, 2), (12, 13, 14, 1, 1), (12, 13)])
+def test_unaccepted_ranks_never_materialize_a_volume(helpers, tmp_path, monkeypatch, shape):
+    path = write_analyze(tmp_path, shape=shape)
+
+    def no_voxel_read(*args, **kwargs):
+        pytest.fail("Rejected dimensions must not materialize voxels")
+
+    monkeypatch.setattr(nib.arrayproxy.ArrayProxy, "__array__", no_voxel_read)
     result = helpers["validate_analyze_pair"](path, tmp_path)
     assert not result["computational_checks_passed"]
-    assert "not_analyze_pair" in result["failures"]
+    assert not result["singleton_axis_view"]
+    assert "in_memory_volume_shape" not in result
+    assert result["original_pair_unchanged"]
+
+
+def test_reported_oasis2_shape_is_a_valid_singleton_view_with_unchanged_sources(helpers, tmp_path):
+    shape = (256, 256, 128, 1)
+    data = np.zeros(shape, dtype=np.uint8)
+    data[0, 0, 0, 0] = 1  # Synthetic nonconstant voxels; no real MRI data.
+    path = tmp_path / "synthetic-mpr-1.nifti.hdr"
+    nib.save(nib.Nifti1Pair(data, np.eye(4)), path)
+    before = fingerprint_tree(tmp_path)
+    result = helpers["validate_analyze_pair"](path, tmp_path)
+    assert result["computational_checks_passed"]
+    assert result["failures"] == [] and result["shape"] == list(shape)
+    assert result["in_memory_volume_shape"] == [256, 256, 128]
+    assert result["singleton_axis_view"] and result["quality_status"] == "review_required"
+    assert result["original_pair_unchanged"] and fingerprint_tree(tmp_path) == before
+
+
+def test_single_file_nifti_is_an_unsupported_pair_format(helpers, tmp_path):
+    path = tmp_path / "synthetic-single-file.nii"
+    nib.save(nib.Nifti1Image(np.ones((12, 13, 14), dtype=np.float32), np.eye(4)), path)
+    before = fingerprint_tree(tmp_path)
+    result = helpers["validate_analyze_pair"](path, tmp_path)
+    assert not result["computational_checks_passed"]
+    assert "unsupported_pair_extension" in result["failures"]
+    assert fingerprint_tree(tmp_path) == before
+
+
+def test_unsupported_loaded_format_is_not_accepted_by_file_extension(
+    helpers, tmp_path, monkeypatch,
+):
+    path = write_analyze(tmp_path)
+    unsupported = nib.Nifti1Image(np.ones((12, 13, 14), dtype=np.float32), np.eye(4))
+    monkeypatch.setattr(nib, "load", lambda *args, **kwargs: unsupported)
+    result = helpers["validate_analyze_pair"](path, tmp_path)
+    assert not result["computational_checks_passed"]
+    assert "unsupported_pair_format" in result["failures"]
+    assert result["original_pair_unchanged"]
+
+
+@pytest.mark.parametrize("kind", ["singular", "nonfinite", "invalid_spacing",
+                                   "conflicting_coded_transforms"])
+def test_paired_nifti_geometry_failures_remain_failures_and_preserve_metadata(
+    helpers, tmp_path, kind,
+):
+    path = tmp_path / "synthetic-geometry.nifti.hdr"
+    data = np.arange(12 * 13 * 14, dtype=np.float32).reshape(12, 13, 14, 1)
+    nib.save(nib.Nifti1Pair(data, np.eye(4)), path)
+    with path.open("rb") as stream:
+        header = nib.Nifti1Pair.header_class.from_fileobj(stream)
+    header["qform_code"] = 0
+    header["sform_code"] = 2
+    if kind == "singular":
+        header["srow_x"] = [0, 0, 0, 0]
+    elif kind == "nonfinite":
+        header["srow_x"][0] = np.nan
+    elif kind == "invalid_spacing":
+        # A loader may repair zero spacing in memory; raw metadata must still fail.
+        header["pixdim"][1] = 0
+    else:
+        header["qform_code"] = 1
+        header["qoffset_x"] = 7
+    with path.open("r+b") as stream:
+        header.write_to(stream)
+    before = fingerprint_tree(tmp_path)
+    result = helpers["private_call"](helpers["validate_analyze_pair"], path, tmp_path)
+    assert not result["computational_checks_passed"]
+    expected = {"singular": "header.affine", "nonfinite": "header.affine",
+                "invalid_spacing": "invalid_source_header_spacing",
+                "conflicting_coded_transforms": "conflicting_qform_sform"}[kind]
+    assert expected in result["failures"]
+    assert result["original_pair_unchanged"] and fingerprint_tree(tmp_path) == before
+
+
+def test_existing_validator_failure_cannot_be_overridden(helpers, tmp_path, monkeypatch):
+    from brainagenticthon.preprocessing.data_validator import ValidationReport, ValidationResult
+
+    path = write_analyze(tmp_path, shape=(12, 13, 14, 1))
+    failure = ValidationReport()
+    failure.add(ValidationResult(False, "synthetic.existing_validator_failure", "synthetic"))
+    monkeypatch.setattr(helpers["NIfTIValidator"], "validate_header", lambda *args: failure)
+    result = helpers["validate_analyze_pair"](path, tmp_path)
+    assert not result["computational_checks_passed"]
+    assert "synthetic.existing_validator_failure" in result["failures"]
+
+
+def test_missing_header_companion_is_not_fabricated(helpers, tmp_path):
+    path = write_analyze(tmp_path)
+    path.unlink()
+    before = fingerprint_tree(tmp_path)
+    result = helpers["validate_analyze_pair"](path, tmp_path)
+    assert not result["computational_checks_passed"]
+    assert "missing_analyze_companion" in result["failures"]
+    assert fingerprint_tree(tmp_path) == before
 
 
 def test_sample_deduplicates_companions_excludes_hidden_and_bounds_reads(helpers, tmp_path):
