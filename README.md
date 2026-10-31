@@ -143,3 +143,7 @@ For the four confirmed DiseaseAcquisition directories, use the
 [primary private Notebook 09](notebooks/09_four_source_private_launcher.ipynb) and
 [four-source evidence and integration guide](docs/four_source_delivery.md).
 Inventory does not approve any source or start training.
+
+Agent-operated remote execution and the verified authentication limitations are
+documented in [secure Colab control](docs/secure_colab_control.md). No remote
+connection, Drive access or real training is implied by controller installation.

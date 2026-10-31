@@ -7,6 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
+    'requirements-colab-control.txt', 'scripts/colab_control.py',
+    'src/brainagenticthon/execution/remote_job.py', 'docs/secure_colab_control.md',
+    'tests/test_colab_control.py',
     'requirements-inventory.txt', 'configs/disease_acquisition.example.json',
     'configs/disease_source_review.template.json', 'docs/four_source_delivery.md',
     'notebooks/09_four_source_private_launcher.ipynb', 'tests/test_four_source_delivery.py',

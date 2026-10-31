@@ -25,6 +25,7 @@ BUNDLE_FILES = tuple(
         "execution/__init__.py",
         "execution/contracts.py",
         "execution/validation.py",
+        "execution/remote_job.py",
         "execution/disease_sources.py",
         "execution/annotation_review.py",
         "execution/source_workflow.py",

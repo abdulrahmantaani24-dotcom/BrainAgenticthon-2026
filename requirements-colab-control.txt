@@ -1,0 +1,2 @@
+# Install separately from the MRI environment. Official controller, not a medical dependency.
+google-colab-cli==0.7.5
