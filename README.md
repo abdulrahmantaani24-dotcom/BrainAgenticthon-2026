@@ -134,3 +134,7 @@ See [the research prototype handoff](docs/task_ab_submission_README.md) and
 [shared Colab launcher](notebooks/07_task_ab_execution_launcher.ipynb). The launcher
 executes synthetic checks only; real data requires independent eligibility review.
 Task C and clinical policies remain unchanged.
+
+For authorized real-data preparation, use [Notebook 08](notebooks/08_private_real_data_readiness_training.ipynb)
+and the [private readiness/training guide](docs/task_ab_real_data_workflow.md).
+Its default action is read-only inventory; real execution stays disabled until all gates pass.

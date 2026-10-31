@@ -1,0 +1,11 @@
+{
+  "schema": "private-mri-readiness-v1",
+  "status": "BLOCKED",
+  "clinical_approval": false,
+  "training_started": false,
+  "blockers": ["private_configuration_missing"],
+  "records": [],
+  "inventory": [],
+  "evidence_references": {},
+  "note": "Template only. Actual per-record references and paths belong exclusively in private Drive reports."
+}

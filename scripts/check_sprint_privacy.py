@@ -7,6 +7,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
+    'configs/task_a_readiness.example.json', 'configs/task_b_readiness.example.json',
+    'configs/private_readiness_report.template.json', 'docs/task_ab_real_data_workflow.md',
+    'notebooks/08_private_real_data_readiness_training.ipynb', 'tests/test_real_data_readiness.py',
+    'src/brainagenticthon/execution/inventory.py',
+    'src/brainagenticthon/execution/real_training.py',
     'README.md', 'docs/task_ab_execution_delivery.md',
     'docs/task_ab_submission_README.md', 'notebooks/07_task_ab_execution_launcher.ipynb',
     'configs/execution_report.template.json', 'configs/evaluation_report.template.json',

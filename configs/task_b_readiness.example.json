@@ -1,0 +1,39 @@
+{
+  "mode": "verified",
+  "real_training_enabled": false,
+  "private_drive_root": "/content/drive/MyDrive/BrainAgenticthon-private",
+  "manifest": "task_b/verified/manifest.json",
+  "evidence": "task_b/verified/release_evidence.json",
+  "image_root": "raw/authorized_brats2021",
+  "output_run": "task_b/runs/REPLACE_WITH_NEW_RUN_NAME",
+  "training": {
+    "epochs": 1,
+    "learning_rate": 0.001,
+    "seed": 42,
+    "device": "cuda",
+    "mixed_precision": true,
+    "patch": [
+      64,
+      64,
+      64
+    ],
+    "patches_per_case": 2
+  },
+  "resume": false,
+  "trusted_resume": false,
+  "final_test_evaluation": false,
+  "freeze": "task_b/frozen/REPLACE_WITH_NEW_FREEZE_NAME",
+  "inventory": {
+    "max_files": 10000,
+    "roots": [
+      {
+        "path": "raw/authorized_brats2021",
+        "access_authorized": false,
+        "access_reference": "",
+        "license_reference": ""
+      }
+    ],
+    "modality_identity_verified": false,
+    "modality_identity_reference": ""
+  }
+}
