@@ -9,37 +9,80 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE_FILES = tuple("src/brainagenticthon/" + name for name in (
-    "__init__.py", "detection/__init__.py", "detection/profile.py", "detection/imaging.py",
-    "detection/data.py", "detection/model.py", "detection/localization.py",
-    "detection/evaluation.py", "detection/training.py", "detection/predict.py",
-    "execution/__init__.py", "execution/contracts.py", "execution/validation.py",
-    "execution/readiness.py", "execution/inventory.py", "execution/real_training.py",
-    "preprocessing/__init__.py",
-    "preprocessing/task_a_readiness.py", "preprocessing/data_validator.py",
-    "preprocessing/dataset_registry.py", "preprocessing/manifest_schema.py",
-    "preprocessing/split_manager.py", "preprocessing/task_output_schemas.py",
-    "preprocessing/oasis2_mri_quality.py", "segmentation/__init__.py",
-    "segmentation/model.py", "segmentation/data.py", "segmentation/inference.py",
-    "segmentation/training.py", "segmentation/predict.py",
-)) + ("requirements-task-a.txt", "scripts/build_task_a_bundle.py",
-      "docs/task_ab_colab_launch.md", "docs/task_ab_execution_delivery.md",
-      "docs/task_ab_submission_README.md",
-      "configs/task_a_readiness.example.json", "configs/task_b_readiness.example.json",
-      "docs/task_ab_real_data_workflow.md",
-      "notebooks/08_private_real_data_readiness_training.ipynb",
-      "configs/private_readiness_report.template.json",
-      "configs/execution_report.template.json", "configs/evaluation_report.template.json",
-      "notebooks/07_task_ab_execution_launcher.ipynb", "configs/task_a_research.example.json",
-      "docs/task_a_research_training.md", "configs/task_b_research.example.json",
-      "docs/task_b_research_training.md", "notebooks/06_task_b_segmentation_training.ipynb",
-      "notebooks/05_task_a_research_training.ipynb")
+BUNDLE_FILES = tuple(
+    "src/brainagenticthon/" + name
+    for name in (
+        "__init__.py",
+        "detection/__init__.py",
+        "detection/profile.py",
+        "detection/imaging.py",
+        "detection/data.py",
+        "detection/model.py",
+        "detection/localization.py",
+        "detection/evaluation.py",
+        "detection/training.py",
+        "detection/predict.py",
+        "execution/__init__.py",
+        "execution/contracts.py",
+        "execution/validation.py",
+        "execution/disease_sources.py",
+        "execution/annotation_review.py",
+        "execution/source_workflow.py",
+        "execution/handoff.py",
+        "execution/readiness.py",
+        "execution/inventory.py",
+        "execution/real_training.py",
+        "preprocessing/__init__.py",
+        "preprocessing/task_a_readiness.py",
+        "preprocessing/data_validator.py",
+        "preprocessing/dataset_registry.py",
+        "preprocessing/manifest_schema.py",
+        "preprocessing/split_manager.py",
+        "preprocessing/task_output_schemas.py",
+        "preprocessing/oasis2_mri_quality.py",
+        "segmentation/__init__.py",
+        "segmentation/model.py",
+        "segmentation/data.py",
+        "segmentation/inference.py",
+        "segmentation/lesion_metrics.py",
+        "segmentation/training.py",
+        "segmentation/predict.py",
+    )
+) + (
+    "requirements-task-a.txt",
+    "requirements-inventory.txt",
+    "configs/disease_acquisition.example.json",
+    "configs/disease_source_review.template.json",
+    "notebooks/09_four_source_private_launcher.ipynb",
+    "docs/four_source_delivery.md",
+    "scripts/build_task_a_bundle.py",
+    "docs/task_ab_colab_launch.md",
+    "docs/task_ab_execution_delivery.md",
+    "docs/task_ab_submission_README.md",
+    "configs/task_a_readiness.example.json",
+    "configs/task_b_readiness.example.json",
+    "docs/task_ab_real_data_workflow.md",
+    "notebooks/08_private_real_data_readiness_training.ipynb",
+    "configs/private_readiness_report.template.json",
+    "configs/execution_report.template.json",
+    "configs/evaluation_report.template.json",
+    "notebooks/07_task_ab_execution_launcher.ipynb",
+    "configs/task_a_research.example.json",
+    "docs/task_a_research_training.md",
+    "configs/task_b_research.example.json",
+    "docs/task_b_research_training.md",
+    "notebooks/06_task_b_segmentation_training.ipynb",
+    "notebooks/05_task_a_research_training.ipynb",
+)
 
 
 def build_bundle(output, root=ROOT):
     root, output = Path(root).resolve(), Path(output).absolute()
-    if (output.resolve().is_relative_to(root) or output.suffix != ".zip"
-            or any(p.is_symlink() for p in (output, *output.parents))):
+    if (
+        output.resolve().is_relative_to(root)
+        or output.suffix != ".zip"
+        or any(p.is_symlink() for p in (output, *output.parents))
+    ):
         raise ValueError("bundle_requires_zip_outside_repository_without_symlinks")
     if output.exists():
         raise ValueError("bundle_output_already_exists_choose_a_new_path")
@@ -51,12 +94,18 @@ def build_bundle(output, root=ROOT):
         data = path.read_bytes()
         if name.endswith(".ipynb"):
             notebook = json.loads(data)
-            if any(c.get("outputs") or c.get("execution_count") is not None
-                   for c in notebook["cells"] if c["cell_type"] == "code"):
+            if any(
+                c.get("outputs") or c.get("execution_count") is not None
+                for c in notebook["cells"]
+                if c["cell_type"] == "code"
+            ):
                 raise ValueError("clear_notebook_outputs_before_bundling")
         blobs[name] = data
-    manifest = {"code_only": True, "schema_version": 1,
-                "files": {name: hashlib.sha256(data).hexdigest() for name, data in blobs.items()}}
+    manifest = {
+        "code_only": True,
+        "schema_version": 1,
+        "files": {name: hashlib.sha256(data).hexdigest() for name, data in blobs.items()},
+    }
     blobs["code_manifest.json"] = json.dumps(manifest, sort_keys=True).encode()
     # Exclusive creation preserves any existing archive, even during concurrent calls.
     with zipfile.ZipFile(output, "x", compression=zipfile.ZIP_DEFLATED) as archive:

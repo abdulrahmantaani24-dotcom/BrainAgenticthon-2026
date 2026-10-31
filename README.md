@@ -138,3 +138,8 @@ Task C and clinical policies remain unchanged.
 For authorized real-data preparation, use [Notebook 08](notebooks/08_private_real_data_readiness_training.ipynb)
 and the [private readiness/training guide](docs/task_ab_real_data_workflow.md).
 Its default action is read-only inventory; real execution stays disabled until all gates pass.
+
+For the four confirmed DiseaseAcquisition directories, use the
+[primary private Notebook 09](notebooks/09_four_source_private_launcher.ipynb) and
+[four-source evidence and integration guide](docs/four_source_delivery.md).
+Inventory does not approve any source or start training.

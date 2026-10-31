@@ -1,0 +1,40 @@
+{
+  "dataset_parent": "/content/drive/MyDrive/BrainMRI/datasets/DiseaseAcquisition",
+  "private_project_root": "/content/drive/MyDrive/BrainAgenticthon-private",
+  "sources": [
+    {
+      "directory": "hwang_meningioma_5945963",
+      "inspection_authorized": true,
+      "review_file": "task_ab_review.json"
+    },
+    {
+      "directory": "isles2022",
+      "inspection_authorized": true,
+      "review_file": "task_ab_review.json"
+    },
+    {
+      "directory": "oasis2_legacy",
+      "inspection_authorized": true,
+      "review_file": "task_ab_review.json"
+    },
+    {
+      "directory": "proteas_23171182",
+      "inspection_authorized": true,
+      "review_file": "task_ab_review.json"
+    }
+  ],
+  "limits": {
+    "max_files": 100000,
+    "max_directories": 100000,
+    "max_file_bytes": 268435456,
+    "max_image_headers": 4000,
+    "max_dicom_headers": 256,
+    "max_metadata_files": 64,
+    "max_hash_bytes": 536870912
+  },
+  "task_configs": {
+    "a": "",
+    "b": ""
+  },
+  "note": "Read-only inspection is requested for these four roots. Training access, license, labels and masks are NOT approved."
+}

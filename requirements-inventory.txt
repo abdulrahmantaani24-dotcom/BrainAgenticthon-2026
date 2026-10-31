@@ -1,0 +1,2 @@
+# Optional private inventory only; no DICOM pixel decoder is installed or used.
+pydicom==3.0.1

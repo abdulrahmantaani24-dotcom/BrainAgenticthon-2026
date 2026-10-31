@@ -7,6 +7,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
+    'requirements-inventory.txt', 'configs/disease_acquisition.example.json',
+    'configs/disease_source_review.template.json', 'docs/four_source_delivery.md',
+    'notebooks/09_four_source_private_launcher.ipynb', 'tests/test_four_source_delivery.py',
+    'src/brainagenticthon/execution/disease_sources.py',
+    'src/brainagenticthon/execution/annotation_review.py',
+    'src/brainagenticthon/execution/source_workflow.py',
+    'src/brainagenticthon/execution/handoff.py',
+    'src/brainagenticthon/segmentation/lesion_metrics.py',
     'configs/task_a_readiness.example.json', 'configs/task_b_readiness.example.json',
     'configs/private_readiness_report.template.json', 'docs/task_ab_real_data_workflow.md',
     'notebooks/08_private_real_data_readiness_training.ipynb', 'tests/test_real_data_readiness.py',

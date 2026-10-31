@@ -1,0 +1,54 @@
+{
+  "schema": "disease-source-review-v1",
+  "source_id": "REPLACE_WITH_EXACT_DIRECTORY_NAME",
+  "review_status": "pending",
+  "evidence": {
+    "access_verified": {
+      "reference": ""
+    },
+    "license_verified": {
+      "reference": ""
+    },
+    "labels_verified": {
+      "reference": ""
+    },
+    "masks_verified": {
+      "reference": ""
+    },
+    "modality_verified": {
+      "reference": ""
+    },
+    "identity_verified": {
+      "reference": ""
+    },
+    "conversion_verified": {
+      "reference": ""
+    },
+    "near_duplicates_reviewed": {
+      "reference": ""
+    },
+    "visual_qc_verified": {
+      "reference": ""
+    },
+    "native_t1_verified": {
+      "reference": ""
+    },
+    "whole_brain_verified": {
+      "reference": ""
+    }
+  },
+  "diagnosis_semantics": {},
+  "mask_semantics": {},
+  "reviewed_pairs": [],
+  "access_verified": false,
+  "license_verified": false,
+  "labels_verified": false,
+  "masks_verified": false,
+  "modality_verified": false,
+  "identity_verified": false,
+  "conversion_verified": false,
+  "near_duplicates_reviewed": false,
+  "visual_qc_verified": false,
+  "native_t1_verified": false,
+  "whole_brain_verified": false
+}
