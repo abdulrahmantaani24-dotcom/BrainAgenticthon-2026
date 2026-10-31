@@ -1,0 +1,10 @@
+{
+  "schema": "task-ab-execution-v1",
+  "status": "NOT_EXECUTED",
+  "scope": "synthetic_engineering",
+  "gpu_executed": false,
+  "clinical_approval": false,
+  "runtime": null,
+  "tasks": {},
+  "note": "Template only. Actual reports are generated privately from observed execution."
+}

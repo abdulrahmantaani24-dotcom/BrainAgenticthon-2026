@@ -127,3 +127,10 @@ repository.  Place raw volumes in `data/raw/`; they are excluded by
 ## License
 
 MIT — see individual modules for any additional notices.
+
+## Task A/B private research execution
+
+See [the research prototype handoff](docs/task_ab_submission_README.md) and
+[shared Colab launcher](notebooks/07_task_ab_execution_launcher.ipynb). The launcher
+executes synthetic checks only; real data requires independent eligibility review.
+Task C and clinical policies remain unchanged.

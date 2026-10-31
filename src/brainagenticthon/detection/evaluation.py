@@ -59,6 +59,7 @@ def patient_metrics(labels, scores, patients, threshold=0.5):
         final_scores.append(float(np.mean([value[1] for value in values])))
     result = binary_metrics(final_labels, final_scores, threshold)
     result["aggregation"] = "mean image score per globally reconciled patient"
+    result["calibration"] = calibration_metrics(final_labels, final_scores)
     return result
 
 
@@ -83,3 +84,25 @@ def evaluate(model, loader, device, threshold=0.5):
                                       [patients[i] for i in indices], threshold)
             result[name].append({"group_index": group, **metrics})
     return result
+
+
+def calibration_metrics(labels, scores, bins=10):
+    """Descriptive Brier/ECE and reliability bins; no calibration is fitted on test."""
+    binary_metrics(labels, scores)  # Reuse strict probability/label validation.
+    if type(bins) is not int or not 2 <= bins <= 50:
+        raise ValueError('invalid_calibration_bins')
+    labels, scores = np.asarray(labels, dtype=float), np.asarray(scores, dtype=float)
+    indices = np.minimum((scores * bins).astype(int), bins - 1)
+    rows, ece = [], 0.
+    for index in range(bins):
+        selected = indices == index
+        count = int(selected.sum())
+        predicted = float(scores[selected].mean()) if count else None
+        observed = float(labels[selected].mean()) if count else None
+        if count:
+            ece += count / len(labels) * abs(predicted - observed)
+        rows.append({'lower': index / bins, 'upper': (index + 1) / bins, 'count': count,
+                     'mean_score': predicted, 'observed_fraction': observed})
+    return {'brier_score': float(np.mean((scores - labels) ** 2)), 'ece': ece,
+            'bins': rows, 'calibration_fitted': False,
+            'interpretation': 'descriptive_only; small_or_synthetic_cohorts_not_clinical_evidence'}

@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 BUNDLE_FILES = tuple("src/brainagenticthon/" + name for name in (
     "__init__.py", "detection/__init__.py", "detection/profile.py", "detection/imaging.py",
     "detection/data.py", "detection/model.py", "detection/localization.py",
-    "detection/evaluation.py", "detection/training.py", "preprocessing/__init__.py",
+    "detection/evaluation.py", "detection/training.py", "detection/predict.py",
+    "execution/__init__.py", "execution/contracts.py", "execution/validation.py",
+    "execution/readiness.py", "preprocessing/__init__.py",
     "preprocessing/task_a_readiness.py", "preprocessing/data_validator.py",
     "preprocessing/dataset_registry.py", "preprocessing/manifest_schema.py",
     "preprocessing/split_manager.py", "preprocessing/task_output_schemas.py",
@@ -20,7 +22,10 @@ BUNDLE_FILES = tuple("src/brainagenticthon/" + name for name in (
     "segmentation/model.py", "segmentation/data.py", "segmentation/inference.py",
     "segmentation/training.py", "segmentation/predict.py",
 )) + ("requirements-task-a.txt", "scripts/build_task_a_bundle.py",
-      "docs/task_ab_colab_launch.md", "configs/task_a_research.example.json",
+      "docs/task_ab_colab_launch.md", "docs/task_ab_execution_delivery.md",
+      "docs/task_ab_submission_README.md",
+      "configs/execution_report.template.json", "configs/evaluation_report.template.json",
+      "notebooks/07_task_ab_execution_launcher.ipynb", "configs/task_a_research.example.json",
       "docs/task_a_research_training.md", "configs/task_b_research.example.json",
       "docs/task_b_research_training.md", "notebooks/06_task_b_segmentation_training.ipynb",
       "notebooks/05_task_a_research_training.ipynb")

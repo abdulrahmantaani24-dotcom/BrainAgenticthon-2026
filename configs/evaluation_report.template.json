@@ -1,0 +1,30 @@
+{
+  "status": "NOT_EVALUATED",
+  "clinical_approval": false,
+  "task": null,
+  "cohort_fingerprint": null,
+  "release_or_input_profile": null,
+  "checkpoint_sha256": null,
+  "evaluation_split": null,
+  "patient_level_split_verified": false,
+  "task_a": {
+    "auroc": null,
+    "sensitivity": null,
+    "specificity": null,
+    "precision": null,
+    "recall": null,
+    "confusion_matrix": null,
+    "brier_score": null,
+    "ece": null,
+    "calibration_fitted": false,
+    "localization": "unsupported_by_classifier"
+  },
+  "task_b": {
+    "WT_dice": null,
+    "TC_dice": null,
+    "ET_dice": null,
+    "both_empty_convention": "excluded",
+    "anatomical_atlas": "not_verified"
+  },
+  "limitations": ["Template only; no performance result is asserted."]
+}
