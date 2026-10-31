@@ -1,0 +1,29 @@
+{
+  "mode": "synthetic",
+  "real_training_enabled": false,
+  "private_drive_root": "/content/drive/MyDrive/BrainAgenticthon-private",
+  "manifest": "task_a/verified/master_manifest.json",
+  "reviews": "task_a/verified/record_reviews.json",
+  "training_evidence": "task_a/verified/training_evidence.json",
+  "image_root": "raw/authorized_sources",
+  "output_run": "task_a/research_runs/REPLACE_WITH_NEW_RUN_NAME",
+  "profile": {
+    "target_shape": [96, 112, 96],
+    "max_voxels": 32000000,
+    "max_file_bytes": 268435456
+  },
+  "training": {
+    "epochs": 10,
+    "batch_size": 1,
+    "gradient_accumulation": 2,
+    "learning_rate": 0.0003,
+    "seed": 42,
+    "mixed_precision": true,
+    "num_workers": 0,
+    "device": "cuda",
+    "threshold": 0.5
+  },
+  "resume": false,
+  "trusted_resume": false,
+  "final_test_evaluation": false
+}

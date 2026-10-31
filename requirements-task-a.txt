@@ -1,0 +1,5 @@
+# Research profile tested on Python 3.12; PyPI supplies CUDA-enabled Torch on Colab.
+# Local offline tests use torch==2.6.0+cpu from the official CPU wheel index.
+torch==2.6.0
+numpy==2.5.4
+nibabel==5.4.2
