@@ -86,7 +86,7 @@ def test_synthetic_notebook_cells_run_without_private_data(tmp_path, capsys):
     finally:
         torch.set_num_threads(previous_threads)
     assert namespace["MODE"] == "synthetic"
-    assert len(namespace["RESULT"].history) == 1
+    assert len(namespace["RESULT"].history) == cfg['training']['epochs']
     assert not (namespace["OUTPUT"] / "test_metrics.json").exists()
     printed = capsys.readouterr().out
     assert str(tmp_path) not in printed
@@ -129,3 +129,30 @@ def test_bundle_rejects_saved_notebook_outputs(tmp_path):
     path.write_text(json.dumps(nb))
     with pytest.raises(ValueError, match="clear_notebook_outputs"):
         module.build_bundle(tmp_path / "blocked.zip", root=public)
+
+
+def test_restart_recovers_code_root_and_rejects_changed_manifest(tmp_path):
+    import sys
+    archive = tmp_path / 'code.zip'
+    builder().build_bundle(archive)
+    snapshot = tmp_path / 'code'
+    with zipfile.ZipFile(archive) as bundle:
+        bundle.extractall(snapshot)  # Trusted fixture built by our allowlisted builder.
+    manifest = snapshot / 'code_manifest.json'
+    state = tmp_path / 'state.json'
+    state.write_text(json.dumps({'code_root': str(snapshot),
+                                'manifest_sha256': hashlib.sha256(
+                                    manifest.read_bytes()).hexdigest()}))
+    code = code_cells()['import-code'].split('import nibabel')[0]
+    code = code.replace("Path('/content/brainagenticthon-code-state.json')",
+                        f'Path({str(state)!r})')
+    previous = sys.path.copy()
+    try:
+        namespace = {}
+        exec(code, namespace)
+        assert namespace['CODE_ROOT'] == snapshot
+        manifest.write_text('{}')
+        with pytest.raises(RuntimeError, match='manifest changed'):
+            exec(code, {})
+    finally:
+        sys.path[:] = previous

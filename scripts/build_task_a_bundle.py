@@ -16,9 +16,14 @@ BUNDLE_FILES = tuple("src/brainagenticthon/" + name for name in (
     "preprocessing/task_a_readiness.py", "preprocessing/data_validator.py",
     "preprocessing/dataset_registry.py", "preprocessing/manifest_schema.py",
     "preprocessing/split_manager.py", "preprocessing/task_output_schemas.py",
-    "preprocessing/oasis2_mri_quality.py",
-)) + ("requirements-task-a.txt", "configs/task_a_research.example.json",
-      "docs/task_a_research_training.md", "notebooks/05_task_a_research_training.ipynb")
+    "preprocessing/oasis2_mri_quality.py", "segmentation/__init__.py",
+    "segmentation/model.py", "segmentation/data.py", "segmentation/inference.py",
+    "segmentation/training.py", "segmentation/predict.py",
+)) + ("requirements-task-a.txt", "scripts/build_task_a_bundle.py",
+      "docs/task_ab_colab_launch.md", "configs/task_a_research.example.json",
+      "docs/task_a_research_training.md", "configs/task_b_research.example.json",
+      "docs/task_b_research_training.md", "notebooks/06_task_b_segmentation_training.ipynb",
+      "notebooks/05_task_a_research_training.ipynb")
 
 
 def build_bundle(output, root=ROOT):

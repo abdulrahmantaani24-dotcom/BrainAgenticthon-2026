@@ -275,9 +275,36 @@ def load_private_cohort(manifest, reviews, evidence, image_root, profile=None):
     return private_call(read)
 
 
+def cuda_smoke_test():
+    """Require actual CUDA forward/backward, finite gradients and a weight update."""
+    if not torch.cuda.is_available():
+        raise ValueError("cuda_requested_but_unavailable")
+    with torch.random.fork_rng(devices=[torch.cuda.current_device()]):
+        model = Tiny3DClassifier().cuda()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+        before = model.head.weight.detach().clone()
+        image = torch.randn(2, 1, 16, 16, 16, device="cuda")
+        labels = torch.tensor([0., 1.], device="cuda")
+        with torch.autocast("cuda"):
+            loss = nn.functional.binary_cross_entropy_with_logits(model(image), labels)
+        loss.backward()
+        if not torch.isfinite(loss) or any(
+            p.grad is not None and not torch.isfinite(p.grad).all() for p in model.parameters()
+        ):
+            raise RuntimeError("cuda_smoke_nonfinite")
+        optimizer.step()
+        torch.cuda.synchronize()
+        if torch.equal(before, model.head.weight):
+            raise RuntimeError("cuda_smoke_no_update")
+        return {"cuda_used": True, "device": torch.cuda.get_device_name(),
+                "torch": str(torch.__version__), "cuda_runtime": torch.version.cuda,
+                "finite_loss": float(loss.detach()), "weight_update": True}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--synthetic", action="store_true")
+    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--epochs", type=int, default=1)
     args = parser.parse_args(argv)
@@ -286,7 +313,10 @@ def main(argv=None):
     # Paths are deliberately excluded from stdout and from caught error details.
     try:
         torch.set_num_threads(1)
-        result = fit(SyntheticCohort(), TrainConfig(epochs=args.epochs, device="cpu"), args.output)
+        if args.device == "cuda":
+            print(json.dumps(cuda_smoke_test()))
+        result = fit(SyntheticCohort(), TrainConfig(epochs=args.epochs, device=args.device),
+                     args.output)
         metrics = evaluate_test(result, SyntheticCohort(), confirm_final_evaluation=True)
         print(json.dumps({"synthetic_only": True, "epochs": len(result.history),
                           "test": metrics["overall"]}, allow_nan=False))

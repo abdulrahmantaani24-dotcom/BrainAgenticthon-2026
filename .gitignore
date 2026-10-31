@@ -231,3 +231,6 @@ runs/
 # ── BUT always track directory placeholders & docs ───────────────────────────
 !**/.gitkeep
 !README.md
+
+# Local engineering scratch; never bundle or publish.
+/work/

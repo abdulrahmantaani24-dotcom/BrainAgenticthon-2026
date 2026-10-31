@@ -213,3 +213,37 @@ and Task A -> B/C inference integration are additional unfinished deliverables.
 The successful OASIS computational audit can support inventory and safe IO; it
 cannot approve these prerequisites. Notebook 04 or equivalent qualified review
 can supply visual evidence but does not establish diagnoses or source eligibility.
+
+## Engineering sprint update: restart and explicit GPU smoke
+
+Notebook 05 now supports `synthetic`, `synthetic_gpu`, and `verified`. Synthetic
+modes always generate tensors; `synthetic_gpu` selects CUDA automatically and
+refuses CPU fallback. Synthetic epochs/settings come from the private config,
+so training and trusted resume use the same settings without manual device edits.
+Use one epoch for a quick smoke; increase total epochs to test resume.
+
+The verified bundle writes its location and manifest checksum to local ephemeral
+Colab state. After **Restart session**, rerun notebook cells from the top (retaining
+your saved bundle path/hash and private CONFIG_PATH). The dependency/import cells
+also recover CODE_ROOT automatically and recheck source hashes. No manual
+CODE_ROOT restoration is needed. A full runtime reset discards local state; the
+bundle verification cell recreates it from private Drive. Installation is
+idempotent; installed research pins and imported package versions must pass.
+Unrelated Colab packages are outside this profile. If packages were
+already imported with different versions, Restart session and rerun from top.
+Python 3.12 is enforced. A real hosted Colab run remains a separate verification.
+
+`cuda_smoke_test()` requires actual CUDA allocation, classifier forward/backward,
+finite loss/gradients, a changed parameter and synchronization. Its report includes
+Torch/CUDA versions and GPU name. It never claims GPU success on CPU-only hosts.
+The CLI also supports `--synthetic --device cuda`; its default remains CPU.
+Synthetic GPU success is not evidence that any real MRI cohort is eligible.
+
+Minimum steps: build/upload the allowlisted code ZIP and independently retain its
+SHA-256; open notebook 05 privately on Python 3.12 GPU; set BUNDLE_PATH,
+BUNDLE_SHA256 and CONFIG_PATH; in a private config choose a fresh output_run and
+mode=`synthetic_gpu`; run all cells. For real training, independently obtain the
+eligible normal/abnormal cohort and review inputs described above, set verified
+mode plus real_training_enabled=true, use a fresh output_run, and run all cells.
+These prerequisites are still blocked. Localization remains an annotation adapter,
+not a trained lesion detector; no classifier-based bounding boxes are produced.
